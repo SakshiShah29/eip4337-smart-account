@@ -8,17 +8,29 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "lib/account-abstraction/contracts/core/Helpers.sol";
+import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 
 contract MinimalAccount is IAccount, Ownable {
-    error MissingFundsPayer();
+    IEntryPoint private immutable i_entryPoint;
 
-    constructor(address initialOwner) Ownable(initialOwner) {}
+    error MissingFundsPayer();
+    error MinimalAccount_validateUserOp_NotCalledByEntryPoint();
+
+   modifier onlyEntryPoint() {
+        if(msg.sender!=address(i_entryPoint)){
+            revert MinimalAccount_validateUserOp_NotCalledByEntryPoint();
+        }
+        _;
+    }
+    constructor(address initialOwner,address entryPoint) Ownable(initialOwner)  {
+        i_entryPoint = IEntryPoint(entryPoint);
+    }
 
     function validateUserOp(
         PackedUserOperation calldata userOp,
         bytes32 userOpHash,
         uint256 missingAccountFunds
-    ) external returns (uint256 validationData) {
+    ) external returns (uint256 validationData) onlyEntryPoint() {
         validationData = _validateSignature(userOp, userOpHash);
         //Here if you require you can do some nonce validatio n check
         // Now we require to payback to the entrypoint or the paymaster the rest of the funds
@@ -50,5 +62,12 @@ contract MinimalAccount is IAccount, Ownable {
                 revert MissingFundsPayer();
             }
         }
+    }
+
+/*//////////////////////////////////////////////////////////////
+                           Getters
+//////////////////////////////////////////////////////////////*/
+    function getEntryPoint() public view returns (IEntryPoint) {
+        return i_entryPoint;
     }
 }
