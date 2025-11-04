@@ -11,10 +11,11 @@ This implementation is under active development. Not audited. Not production-rea
 ### Core Components
 
 - **MinimalAccount.sol** - ERC-4337 compliant smart contract account with:
-  - `validateUserOp()` - UserOperation validation against EntryPoint
-  - `execute()` - Arbitrary contract call execution
-  - Signature verification (ECDSA)
-  - Nonce management for replay protection
+  - `validateUserOp()` - ✅ UserOperation validation against EntryPoint
+  - `executeCall()` - ✅ Arbitrary contract call execution
+  - Signature verification - ✅ ECDSA with EIP-191 message hashing
+  - EntryPoint-only modifier protection - ✅ Prevents unauthorized calls
+  - Owner/EntryPoint authorization - ✅ Dual execution path security
 
 - **EntryPoint Integration** - Singleton contract handling:
   - UserOperation mempool simulation
@@ -26,10 +27,15 @@ This implementation is under active development. Not audited. Not production-rea
 
 | Component | Status |
 |-----------|--------|
-| IAccount interface | 🚧 In Progress |
-| validateUserOp | 🚧 In Progress |
-| Signature validation | 🚧 In Progress |
-| Nonce management | ⏳ Planned |
+| IAccount interface | ✅ Complete |
+| validateUserOp | ✅ Complete |
+| Signature validation (ECDSA + EIP-191) | ✅ Complete |
+| executeCall() function | ✅ Complete |
+| EntryPoint integration | ✅ Complete |
+| Gas payment to EntryPoint | ✅ Complete |
+| Deployment scripts | ✅ Complete |
+| Basic tests | ✅ Complete |
+| Nonce management | 🚧 EntryPoint handles (manual validation possible) |
 | Paymaster support | ⏳ Planned |
 | Aggregator support | ⏳ Planned |
 
@@ -56,13 +62,15 @@ forge test -vvv
 forge test --gas-report
 
 # Deploy (testnet)
-forge script script/Deploy.s.sol --rpc-url $RPC_URL --broadcast
+forge script script/DeployMinimalAccount.s.sol --rpc-url $RPC_URL --broadcast
 ```
 
 ## Security Considerations
 
-- [ ] Signature replay protection via nonces
-- [ ] Reentrancy guards on execute()
+- [x] Signature replay protection via nonces (handled by EntryPoint)
+- [x] Authorization checks (EntryPoint + Owner modifiers)
+- [x] ECDSA signature validation with EIP-191
+- [ ] Reentrancy guards on executeCall()
 - [ ] Gas griefing mitigation
 - [ ] Front-running protection
 - [ ] Storage collision prevention (EIP-1967 proxy patterns)

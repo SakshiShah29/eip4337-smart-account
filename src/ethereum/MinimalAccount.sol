@@ -64,7 +64,7 @@ contract MinimalAccount is IAccount, Ownable {
                            External functions
     //////////////////////////////////////////////////////////////*/
     //This
-    function excequteCall(
+    function executeCall(
         address target,
         uint256 value,
         bytes calldata functionData
