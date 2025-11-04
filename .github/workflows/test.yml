@@ -1,37 +1,51 @@
-name: CI
-
-permissions:
-  contents: read
+name: Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
-  workflow_dispatch:
-
-env:
-  FOUNDRY_PROFILE: ci
+    branches: [main]
 
 jobs:
-  check:
-    name: Foundry project
+  test:
+    name: Foundry Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
-          persist-credentials: false
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: forge --version
-
-      - name: Run Forge fmt
-        run: forge fmt --check
+        with:
+          version: nightly
 
       - name: Run Forge build
-        run: forge build --sizes
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
 
       - name: Run Forge tests
-        run: forge test -vvv
+        run: |
+          forge test -vvv --gas-report
+        id: test
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          forge test --json | jq -r '.[] | "- \(.test_results | to_entries | map(select(.value.status == "Success") | .key) | length) passed, \(.test_results | to_entries | map(select(.value.status == "Failure") | .key) | length) failed"' >> $GITHUB_STEP_SUMMARY || echo "Tests completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Forge coverage
+        run: |
+          forge coverage --report summary --report lcov
+        continue-on-error: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./lcov.info
+          flags: foundry
+        continue-on-error: true

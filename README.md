@@ -1,5 +1,10 @@
 # EIP-4337 Account Abstraction Implementation
 
+[![Tests](https://github.com/SakshiShah29/foundry-account-abstraction/actions/workflows/test.yml/badge.svg)](https://github.com/SakshiShah29/foundry-account-abstraction/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Solidity](https://img.shields.io/badge/Solidity-^0.8.18-363636?logo=solidity)](https://docs.soliditylang.org/)
+[![Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg)](https://getfoundry.sh/)
+
 A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account Abstraction standard using Foundry.
 
 ## ⚠️ Status: Work in Progress
