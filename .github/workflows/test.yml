@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv --gas-report
+          forge test -vvv
         id: test
 
       - name: Generate test summary
