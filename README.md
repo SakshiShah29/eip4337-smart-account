@@ -11,14 +11,17 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 
 ![Tests](https://img.shields.io/badge/tests-4%20passed%2C%200%20failed-brightgreen)
 ![Total Tests](https://img.shields.io/badge/total%20tests-4-blue)
-![Last Run](https://img.shields.io/badge/last%20run-manual-lightgrey)
+![Last Run](https://img.shields.io/badge/last%20run-2025-11-04 08:32:24 UTC-lightgrey)
 
 | Metric | Value |
 |--------|-------|
 | ✅ Passed | 4 |
 | ❌ Failed | 0 |
 | 📊 Total | 4 |
-| 🕐 Last Updated | Will update automatically on push to main |
+| 🕐 Last Updated | 2025-11-04 08:32:24 UTC |
+
+
+
 
 ## ⚠️ Status: Work in Progress
 
