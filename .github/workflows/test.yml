@@ -50,8 +50,9 @@ jobs:
           echo "passed=$PASSED_TESTS" >> $GITHUB_OUTPUT
           echo "failed=$FAILED_TESTS" >> $GITHUB_OUTPUT
 
-          # Get timestamp
-          echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+          # Get timestamp (URL-safe format for badges)
+          echo "timestamp=$(date -u '+%Y---%m---%d_%H:%M_UTC')" >> $GITHUB_OUTPUT
+          echo "timestamp_display=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
           # Create status badge color
           if [ "$FAILED_TESTS" -eq 0 ]; then
@@ -78,7 +79,7 @@ jobs:
           | ✅ Passed | ${{ steps.parse_tests.outputs.passed }} |
           | ❌ Failed | ${{ steps.parse_tests.outputs.failed }} |
           | 📊 Total | ${{ steps.parse_tests.outputs.total }} |
-          | 🕐 Last Updated | ${{ steps.parse_tests.outputs.timestamp }} |
+          | 🕐 Last Updated | ${{ steps.parse_tests.outputs.timestamp_display }} |
 
           EOF
 
