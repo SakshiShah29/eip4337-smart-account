@@ -36,22 +36,6 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 ```
 
 
-
-**Last Updated:** Will update automatically on push to main
-
-### Test Summary
-- ✅ **Passed:** 4
-- ❌ **Failed:** 0
-- 📊 **Total:** 4
-
-### Coverage Report
-```
-Will be populated automatically from forge coverage on next push
-```
-
-
-
-
 ## ⚠️ Status: Work in Progress
 
 This implementation is under active development. Not audited. Not production-ready.
