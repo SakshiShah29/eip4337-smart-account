@@ -18,7 +18,7 @@ contract DeployMinimalAccount is Script {
             .getConfigByChainId(block.chainid);
         vm.startBroadcast(networkConfig.account);
         MinimalAccount minimalAccount = new MinimalAccount(
-            msg.sender,
+            networkConfig.account,
             networkConfig.entryPoint
         );
         vm.stopBroadcast();

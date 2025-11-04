@@ -5,30 +5,55 @@ pragma solidity ^0.8.18;
 import {Script} from "forge-std/Script.sol";
 import {MinimalAccount} from "../src/ethereum/MinimalAccount.sol";
 import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
-
+import {HelperConfig} from "./HelperConfig.s.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
 contract SendPackedUserOp is Script {
+    using MessageHashUtils for bytes32;
+    uint256 ANVIL_DEFAULT_PRIVATE_KEY =
+        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80; // Default Anvil key 0
     function run() external {}
 
     function generateUserSignedOperation(
         bytes memory callData,
-        address sender
-    ) public returns (PackedUserOperation calldata) {
+        HelperConfig.NetworkConfig memory networkConfig
+    ) public returns (PackedUserOperation memory) {
         //Generate the unsigned user operation
         // Sign the user operation
-        uint256 nonce = vm.getNonce(sender);
+        uint256 nonce = vm.getNonce(networkConfig.account);
 
-        PackedUserOperation unsignedUserOp = _generateUnsignedUserOperation(
+        PackedUserOperation memory userOp = _generateUnsignedUserOperation(
             callData,
-            sender,
+            networkConfig.account,
             nonce
         );
+
+        //get userOp hash
+        bytes32 userOpHash = IEntryPoint(networkConfig.entryPoint)
+            .getUserOpHash(userOp);
+        bytes32 digest = userOpHash.toEthSignedMessageHash();
+        //Sign it
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+
+        if (block.chainid == 31337) {
+            // Anvil's default chain ID
+            (v, r, s) = vm.sign(ANVIL_DEFAULT_PRIVATE_KEY, digest);
+        } else {
+            // For scripts or other networks where config.account is unlocked
+            (v, r, s) = vm.sign(networkConfig.account, digest);
+        }
+
+        userOp.signature = abi.encodePacked(r, s, v); //IMPORTANT: signature is in the format r,s,v
+        return userOp;
     }
 
     function _generateUnsignedUserOperation(
         bytes memory callData,
         address sender,
         uint256 nonce
-    ) internal pure returns (PackedUserOperation calldata) {
+    ) internal pure returns (PackedUserOperation memory) {
         uint128 verificationGasLimit = 16777216;
         uint128 callGasLimit = verificationGasLimit;
         uint128 maxPriorityFeePerGas = 256;
