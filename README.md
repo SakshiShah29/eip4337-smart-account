@@ -1,11 +1,24 @@
 # EIP-4337 Account Abstraction Implementation
 
-[![Tests](https://github.com/SakshiShah29/foundry-account-abstraction/actions/workflows/test.yml/badge.svg)](https://github.com/SakshiShah29/foundry-account-abstraction/actions/workflows/test.yml)
+[![Tests](https://github.com/SakshiShah29/eip4337-smart-account/actions/workflows/test.yml/badge.svg)](https://github.com/SakshiShah29/eip4337-smart-account/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.18-363636?logo=solidity)](https://docs.soliditylang.org/)
 [![Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg)](https://getfoundry.sh/)
 
 A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account Abstraction standard using Foundry.
+
+## 🧪 Latest Test Results
+
+![Tests](https://img.shields.io/badge/tests-4%20passed%2C%200%20failed-brightgreen)
+![Total Tests](https://img.shields.io/badge/total%20tests-4-blue)
+![Last Run](https://img.shields.io/badge/last%20run-manual-lightgrey)
+
+| Metric | Value |
+|--------|-------|
+| ✅ Passed | 4 |
+| ❌ Failed | 0 |
+| 📊 Total | 4 |
+| 🕐 Last Updated | Will update automatically on push to main |
 
 ## ⚠️ Status: Work in Progress
 

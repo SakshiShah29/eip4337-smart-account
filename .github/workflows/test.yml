@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   test:
     name: Foundry Tests
@@ -14,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -28,15 +33,111 @@ jobs:
 
       - name: Run Forge tests
         run: |
+          forge test --json > test-results.json
           forge test -vvv
         id: test
+        continue-on-error: true
 
-      - name: Generate test summary
+      - name: Parse test results
+        id: parse_tests
+        run: |
+          # Extract test results
+          TOTAL_TESTS=$(cat test-results.json | jq '[.[] | .test_results | length] | add')
+          PASSED_TESTS=$(cat test-results.json | jq '[.[] | .test_results | to_entries[] | select(.value.status == "Success")] | length')
+          FAILED_TESTS=$(cat test-results.json | jq '[.[] | .test_results | to_entries[] | select(.value.status == "Failure")] | length')
+
+          echo "total=$TOTAL_TESTS" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED_TESTS" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED_TESTS" >> $GITHUB_OUTPUT
+
+          # Get timestamp
+          echo "timestamp=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+          # Create status badge color
+          if [ "$FAILED_TESTS" -eq 0 ]; then
+            echo "status=passing" >> $GITHUB_OUTPUT
+            echo "color=brightgreen" >> $GITHUB_OUTPUT
+          else
+            echo "status=failing" >> $GITHUB_OUTPUT
+            echo "color=red" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update README with test results
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Create test results section
+          cat > test_results.md << EOF
+          ## 🧪 Latest Test Results
+
+          ![Tests](https://img.shields.io/badge/tests-${{ steps.parse_tests.outputs.passed }}%20passed%2C%20${{ steps.parse_tests.outputs.failed }}%20failed-${{ steps.parse_tests.outputs.color }})
+          ![Total Tests](https://img.shields.io/badge/total%20tests-${{ steps.parse_tests.outputs.total }}-blue)
+          ![Last Run](https://img.shields.io/badge/last%20run-${{ steps.parse_tests.outputs.timestamp }}-lightgrey)
+
+          | Metric | Value |
+          |--------|-------|
+          | ✅ Passed | ${{ steps.parse_tests.outputs.passed }} |
+          | ❌ Failed | ${{ steps.parse_tests.outputs.failed }} |
+          | 📊 Total | ${{ steps.parse_tests.outputs.total }} |
+          | 🕐 Last Updated | ${{ steps.parse_tests.outputs.timestamp }} |
+
+          EOF
+
+          # Check if test results section exists in README
+          if grep -q "## 🧪 Latest Test Results" README.md; then
+            # Replace existing section
+            awk '
+              BEGIN {in_section=0; in_table=0}
+              /## 🧪 Latest Test Results/ {in_section=1; print; next}
+              in_section && /^##[^#]/ {in_section=0}
+              in_section && /^\|/ {in_table=1; next}
+              in_section && in_table && !/^\|/ {in_table=0}
+              !in_section || (!in_table && !/^!/) {print}
+            ' README.md > README.tmp
+
+            # Insert new results after the test results header
+            awk '
+              /## 🧪 Latest Test Results/ {print; system("cat test_results.md | tail -n +2"); next}
+              {print}
+            ' README.tmp > README.md
+            rm README.tmp
+          else
+            # Add new section after badges
+            awk '
+              /^A minimal, gas-optimized smart contract wallet/ {
+                print
+                print ""
+                system("cat test_results.md")
+                next
+              }
+              {print}
+            ' README.md > README.tmp && mv README.tmp README.md
+          fi
+
+          rm test_results.md
+
+      - name: Commit README changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "docs: update test results in README [skip ci]"
+            git push
+          fi
+
+      - name: Generate test summary for PR
         if: always()
         run: |
-          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          forge test --json | jq -r '.[] | "- \(.test_results | to_entries | map(select(.value.status == "Success") | .key) | length) passed, \(.test_results | to_entries | map(select(.value.status == "Failure") | .key) | length) failed"' >> $GITHUB_STEP_SUMMARY || echo "Tests completed" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | ${{ steps.parse_tests.outputs.passed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | ${{ steps.parse_tests.outputs.failed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Total | ${{ steps.parse_tests.outputs.total }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Forge coverage
         run: |
@@ -49,3 +150,7 @@ jobs:
           files: ./lcov.info
           flags: foundry
         continue-on-error: true
+
+      - name: Fail if tests failed
+        if: steps.parse_tests.outputs.failed != '0'
+        run: exit 1
