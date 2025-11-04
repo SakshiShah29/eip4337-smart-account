@@ -23,6 +23,17 @@ This implementation is under active development. Not audited. Not production-rea
   - Bundler transaction execution
   - Paymaster support (planned)
 
+- **SendPackedUserOp.sol** - Script for UserOperation generation:
+  - ✅ Generates unsigned PackedUserOperation with gas parameters
+  - ✅ Signs UserOp with ECDSA (EIP-191 message hashing)
+  - ✅ Multi-network support (Anvil local testing + Sepolia)
+  - ✅ Automatic private key handling per network
+
+- **HelperConfig.sol** - Multi-chain configuration management:
+  - ✅ Network-specific EntryPoint addresses
+  - ✅ Account management (Anvil default key, Sepolia burner wallet)
+  - ✅ Automatic EntryPoint deployment for local testing
+
 ## EIP-4337 Specification Compliance
 
 | Component | Status |
@@ -34,17 +45,21 @@ This implementation is under active development. Not audited. Not production-rea
 | EntryPoint integration | ✅ Complete |
 | Gas payment to EntryPoint | ✅ Complete |
 | Deployment scripts | ✅ Complete |
-| Basic tests | ✅ Complete |
+| **UserOperation signing & generation** | ✅ **Complete** |
+| **Signature validation tests** | ✅ **Complete** |
+| Basic ownership tests | ✅ Complete |
 | Nonce management | 🚧 EntryPoint handles (manual validation possible) |
+| Full EntryPoint execution tests | ⏳ In Progress |
 | Paymaster support | ⏳ Planned |
 | Aggregator support | ⏳ Planned |
 
 ## Technical Stack
 
-- **Solidity ^0.8.0** - Smart contracts
+- **Solidity ^0.8.18** - Smart contracts
 - **Foundry** - Build, test, deployment framework
-- **OpenZeppelin Contracts** - Security primitives (ECDSA, ERC-165)
-- **Forge-std** - Testing utilities
+- **OpenZeppelin Contracts** - Security primitives (ECDSA, MessageHashUtils, ERC-165)
+- **Forge-std** - Testing utilities with vm cheatcodes
+- **eth-infinitism/account-abstraction** - Official EIP-4337 reference implementation
 
 ## Development
 
@@ -58,11 +73,17 @@ forge build
 # Run test suite
 forge test -vvv
 
+# Run specific test
+forge test --mt testUserOpSigningIsCorrect -vvv
+
 # Gas reporting
 forge test --gas-report
 
-# Deploy (testnet)
-forge script script/DeployMinimalAccount.s.sol --rpc-url $RPC_URL --broadcast
+# Deploy to Sepolia testnet
+forge script script/DeployMinimalAccount.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY
+
+# Deploy to local Anvil
+forge script script/DeployMinimalAccount.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 ```
 
 ## Security Considerations
@@ -79,13 +100,38 @@ forge script script/DeployMinimalAccount.s.sol --rpc-url $RPC_URL --broadcast
 ## UserOperation Flow
 
 ```
-1. User signs UserOperation off-chain
-2. Bundler receives UserOp → sends to EntryPoint
-3. EntryPoint calls validateUserOp() on MinimalAccount
-4. Signature + nonce verification
-5. EntryPoint executes UserOp via handleOps()
-6. Gas accounting & payment to bundler
+1. User creates unsigned PackedUserOperation (via SendPackedUserOp.sol)
+2. UserOp hash computed by EntryPoint.getUserOpHash()
+3. Hash wrapped with EIP-191 prefix: "\x19Ethereum Signed Message:\n32"
+4. User signs digest with ECDSA (off-chain or vm.sign in tests)
+5. Bundler receives signed UserOp → sends to EntryPoint
+6. EntryPoint calls validateUserOp() on MinimalAccount
+7. MinimalAccount verifies signature matches owner
+8. EntryPoint executes UserOp via handleOps()
+9. Gas accounting & payment to bundler
 ```
+
+## Recent Updates (Latest Commit)
+
+**Commit:** `feat: user operations signature validation complete`
+
+### What's New:
+- ✅ **SendPackedUserOp.sol**: Complete UserOperation signing implementation
+  - Generates properly formatted PackedUserOperation
+  - Signs with ECDSA using EIP-191 message hashing
+  - Network-aware signing (Anvil vs Sepolia)
+
+- ✅ **testUserOpSigningIsCorrect()**: New test validating end-to-end signing flow
+  - Generates signed UserOperation
+  - Computes userOpHash via EntryPoint
+  - Recovers signer using ECDSA.recover
+  - Asserts recovered signer matches MinimalAccount owner
+
+- 🔧 **HelperConfig.sol**: Enhanced multi-network configuration
+  - Caches EntryPoint deployment for Anvil to avoid re-deployment
+  - Proper private key usage for Anvil (FOUNDRY_DEFAULT_ANVIL_KEY)
+
+
 
 ## References
 
