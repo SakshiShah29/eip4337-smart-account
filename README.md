@@ -13,12 +13,17 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 ![Total Tests](https://img.shields.io/badge/total%20tests-4-blue)
 ![Last Run](https://img.shields.io/badge/last%20run-pending-lightgrey)
 
-| Metric | Value |
-|--------|-------|
-| ✅ Passed | 4 |
-| ❌ Failed | 0 |
-| 📊 Total | 4 |
-| 🕐 Last Updated | 2025-11-04 08:32:24 UTC |
+**Last Updated:** Will update automatically on push to main
+
+### Test Summary
+- ✅ **Passed:** 4
+- ❌ **Failed:** 0
+- 📊 **Total:** 4
+
+### Coverage Report
+```
+Will be populated automatically from forge coverage on next push
+```
 
 
 

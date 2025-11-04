@@ -63,9 +63,17 @@ jobs:
             echo "color=red" >> $GITHUB_OUTPUT
           fi
 
+      - name: Generate coverage report
+        run: |
+          forge coverage --report summary > coverage.txt 2>&1 || true
+        continue-on-error: true
+
       - name: Update README with test results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
+          # Extract coverage table from forge output
+          COVERAGE_TABLE=$(awk '/^[|].*[|]$/ {print} /^[+].*[+]$/ {print}' coverage.txt | head -20)
+
           # Create test results section
           cat > test_results.md << EOF
           ## 🧪 Latest Test Results
@@ -74,12 +82,17 @@ jobs:
           ![Total Tests](https://img.shields.io/badge/total%20tests-${{ steps.parse_tests.outputs.total }}-blue)
           ![Last Run](https://img.shields.io/badge/last%20run-${{ steps.parse_tests.outputs.timestamp }}-lightgrey)
 
-          | Metric | Value |
-          |--------|-------|
-          | ✅ Passed | ${{ steps.parse_tests.outputs.passed }} |
-          | ❌ Failed | ${{ steps.parse_tests.outputs.failed }} |
-          | 📊 Total | ${{ steps.parse_tests.outputs.total }} |
-          | 🕐 Last Updated | ${{ steps.parse_tests.outputs.timestamp_display }} |
+          **Last Updated:** ${{ steps.parse_tests.outputs.timestamp_display }}
+
+          ### Test Summary
+          - ✅ **Passed:** ${{ steps.parse_tests.outputs.passed }}
+          - ❌ **Failed:** ${{ steps.parse_tests.outputs.failed }}
+          - 📊 **Total:** ${{ steps.parse_tests.outputs.total }}
+
+          ### Coverage Report
+          \`\`\`
+          ${COVERAGE_TABLE}
+          \`\`\`
 
           EOF
 
@@ -114,7 +127,7 @@ jobs:
             ' README.md > README.tmp && mv README.tmp README.md
           fi
 
-          rm test_results.md
+          rm test_results.md coverage.txt
 
       - name: Commit README changes
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -139,11 +152,6 @@ jobs:
           echo "| ✅ Passed | ${{ steps.parse_tests.outputs.passed }} |" >> $GITHUB_STEP_SUMMARY
           echo "| ❌ Failed | ${{ steps.parse_tests.outputs.failed }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 📊 Total | ${{ steps.parse_tests.outputs.total }} |" >> $GITHUB_STEP_SUMMARY
-
-      - name: Run Forge coverage
-        run: |
-          forge coverage --report summary --report lcov
-        continue-on-error: true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
