@@ -11,9 +11,9 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 
 ![Tests](https://img.shields.io/badge/tests-5%20passed%2C%200%20failed-brightgreen)
 ![Total Tests](https://img.shields.io/badge/total%20tests-5-blue)
-![Last Run](https://img.shields.io/badge/last%20run-2025---11---06_04:19_UTC-lightgrey)
+![Last Run](https://img.shields.io/badge/last%20run-2025---11---06_06:28_UTC-lightgrey)
 
-**Last Updated:** 2025-11-06 04:19:35 UTC
+**Last Updated:** 2025-11-06 06:28:02 UTC
 
 ### Test Summary
 - ✅ **Passed:** 5
@@ -28,11 +28,25 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 |-----------------------------------+----------------+----------------+---------------+----------------|
 | script/HelperConfig.s.sol         | 62.50% (15/24) | 70.00% (14/20) | 40.00% (2/5)  | 42.86% (3/7)   |
 |-----------------------------------+----------------+----------------+---------------+----------------|
-| script/SendPackedUserOp.s.sol     | 90.91% (20/22) | 95.65% (22/23) | 50.00% (1/2)  | 66.67% (2/3)   |
+| script/SendPackedUserOp.s.sol     | 90.91% (20/22) | 95.83% (23/24) | 50.00% (1/2)  | 66.67% (2/3)   |
 |-----------------------------------+----------------+----------------+---------------+----------------|
 | src/ethereum/MinimalAccount.sol   | 73.33% (22/30) | 79.31% (23/29) | 33.33% (2/6)  | 77.78% (7/9)   |
 |-----------------------------------+----------------+----------------+---------------+----------------|
-| Total                             | 76.19% (64/84) | 83.95% (68/81) | 38.46% (5/13) | 61.90% (13/21) |
+| Total                             | 76.19% (64/84) | 84.15% (69/82) | 38.46% (5/13) | 61.90% (13/21) |
+```
+
+
+
+**Last Updated:** 2025-11-06 04:19:35 UTC
+
+### Test Summary
+- ✅ **Passed:** 5
+- ❌ **Failed:** 0
+- 📊 **Total:** 5
+
+### Coverage Report
+```
++======================================================================================================+
 ```
 
 
