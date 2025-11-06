@@ -92,7 +92,8 @@ contract MinimalAccountTest is Test {
         PackedUserOperation memory packedUserOp = sendPackedUserOp
             .generateUserSignedOperation(
                 executeCallData,
-                helperConfig.getConfigByChainId(block.chainid)
+                helperConfig.getConfigByChainId(block.chainid),
+                address(minimalAccount)
             );
         bytes32 userOpHash = IEntryPoint(
             helperConfig.getConfigByChainId(block.chainid).entryPoint
@@ -133,7 +134,8 @@ contract MinimalAccountTest is Test {
         PackedUserOperation memory packedUserOp = sendPackedUserOp
             .generateUserSignedOperation(
                 executeCallData,
-                helperConfig.getConfigByChainId(block.chainid)
+                helperConfig.getConfigByChainId(block.chainid),
+                address(minimalAccount)
             );
         bytes32 userOpHash = IEntryPoint(
             helperConfig.getConfigByChainId(block.chainid).entryPoint
@@ -154,7 +156,42 @@ contract MinimalAccountTest is Test {
 
     function testEntryPointCanExecuteCommands() public {
         //Arrange
+        assertEq(usdc.balanceOf(address(minimalAccount)), 0);
+        address dest = address(usdc);
+        uint256 value = 0;
+        bytes memory functionData = abi.encodeWithSelector(
+            ERC20Mock.mint.selector,
+            address(minimalAccount),
+            AMOUNT
+        );
+        // This is what the EntryPoint will use to call our smart account.
+        bytes memory executeCallData = abi.encodeWithSelector(
+            minimalAccount.executeCall.selector,
+            address(usdc), // dest: the USDC contract
+            0, // value: no ETH sent with this call
+            functionData // data: the encoded call to usdc.mint
+        );
+        PackedUserOperation memory packedUserOp = sendPackedUserOp
+            .generateUserSignedOperation(
+                executeCallData,
+                helperConfig.getConfigByChainId(block.chainid),
+                address(minimalAccount)
+            );
+
+        vm.deal(address(minimalAccount), 1e18);
+        PackedUserOperation[] memory ops = new PackedUserOperation[](1);
+        ops[0] = packedUserOp;
         //Act
+        vm.prank(randomUser);
+        IEntryPoint(helperConfig.getConfigByChainId(block.chainid).entryPoint)
+            .handleOps(ops, payable(randomUser));
+
         //Assert
+        //Why? Because the EntryPoint called executeCall
+        assertEq(
+            usdc.balanceOf(address(minimalAccount)),
+            AMOUNT,
+            "USDC balance should be equal to AMOUNT"
+        );
     }
 }
