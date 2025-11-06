@@ -11,9 +11,9 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 
 ![Tests](https://img.shields.io/badge/tests-5%20passed%2C%200%20failed-brightgreen)
 ![Total Tests](https://img.shields.io/badge/total%20tests-5-blue)
-![Last Run](https://img.shields.io/badge/last%20run-2025---11---06_04:18_UTC-lightgrey)
+![Last Run](https://img.shields.io/badge/last%20run-2025---11---06_04:19_UTC-lightgrey)
 
-**Last Updated:** 2025-11-06 04:18:05 UTC
+**Last Updated:** 2025-11-06 04:19:35 UTC
 
 ### Test Summary
 - ✅ **Passed:** 5
@@ -33,6 +33,20 @@ A minimal, gas-optimized smart contract wallet implementing the EIP-4337 Account
 | src/ethereum/MinimalAccount.sol   | 73.33% (22/30) | 79.31% (23/29) | 33.33% (2/6)  | 77.78% (7/9)   |
 |-----------------------------------+----------------+----------------+---------------+----------------|
 | Total                             | 76.19% (64/84) | 83.95% (68/81) | 38.46% (5/13) | 61.90% (13/21) |
+```
+
+
+
+**Last Updated:** 2025-11-06 04:18:05 UTC
+
+### Test Summary
+- ✅ **Passed:** 5
+- ❌ **Failed:** 0
+- 📊 **Total:** 5
+
+### Coverage Report
+```
++======================================================================================================+
 ```
 
 
